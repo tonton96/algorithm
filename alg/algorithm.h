@@ -14,7 +14,7 @@ long find_gcd(long a, long b);
 void find_euclid_extended(long a, long b, long &x, long &y, long &c);
 
 /**
- * Finding x with ax = b (mod n), a > 0, 0 <= b < n (Linear congruence)
+ * Finding x with ax = b (mod n), a > 0, 0 <= b, x < n (Linear congruence)
  */
 std::vector<long> find_linear_congruence(long a, long b, long n);
 
