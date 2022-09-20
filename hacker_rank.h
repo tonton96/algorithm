@@ -69,4 +69,66 @@ std::vector<int> solve(int a, int b, long k, int m) {
 }
 #endif
 
+#if 0
+// https://www.hackerrank.com/challenges/most-distant
+double solve(std::vector<std::vector<int>> coordinates) {
+    int max_x, max_y, min_x, min_y;
+    bool fx = true, fy = true;
+    for (auto &point: coordinates) {
+        if (point[0] == 0 && point[1] == 0) {
+            if (fx) {
+                max_x = min_x = point[0];
+                fx = false;
+            } else {
+                min_x = std::min(min_x, point[0]);
+                max_x = std::max(max_x, point[0]);
+            }
+            if (fy) {
+                max_y = min_y = point[1];
+                fy = false;
+            } else {
+                min_y = std::min(min_y, point[1]);
+                max_y = std::max(max_y, point[1]);
+            }
+        } else if (point[0] != 0) {
+            if (fx) {
+                max_x = min_x = point[0];
+                fx = false;
+            } else {
+                min_x = std::min(min_x, point[0]);
+                max_x = std::max(max_x, point[0]);
+            }
+        } else {
+            if (fy) {
+                max_y = min_y = point[1];
+                fy = false;
+            } else {
+                min_y = std::min(min_y, point[1]);
+                max_y = std::max(max_y, point[1]);
+            }
+        }
+    }
+
+    double m;
+    if (!fx && !fy) {
+        double dist[6];
+        dist[0] = sqrt(1.0 * min_x * min_x + 1.0 * max_y * max_y);
+        dist[1] = max_x - min_x;
+        dist[2] = sqrt(1.0 * min_x * min_x + 1.0 * min_y * min_y);
+        dist[3] = sqrt(1.0 * max_y * max_y + 1.0 * max_x * max_x);
+        dist[4] = max_y - min_y;
+        dist[5] = sqrt(1.0 * max_x * max_x + 1.0 * min_y * min_y);
+        m = dist[0];
+        for (int i = 1; i < 6; i++) {
+            m = std::max(m, dist[i]);
+        }
+    } else if (!fx) {
+        m = max_x - min_x;
+    } else {
+        m = max_x - min_y;
+    }
+    return m;
+}
+#endif
+
 #endif //ALGORITHM_HACKER_RANK_H
