@@ -1,7 +1,7 @@
 #ifndef ALGORITHM_HACKER_RANK_H
 #define ALGORITHM_HACKER_RANK_H
 
-#include "alg/algorithm.h"
+#include "alg/my_algorithm.h"
 #include "vector"
 #include "cmath"
 
@@ -128,6 +128,45 @@ double solve(std::vector<std::vector<int>> coordinates) {
         m = max_x - min_y;
     }
     return m;
+}
+#endif
+
+#if 0
+// https://www.hackerrank.com/challenges/jim-and-the-jokes
+int64_t solve(const std::vector<std::vector<int>> &lst_dates) {
+    int dates[4][10][13];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 10; j++) {
+            for (int k = 1; k <= 12; k++) {
+                dates[i][j][k] = -1;
+                if (i < k && j < k) {
+                    dates[i][j][k] = i * k + j;
+                }
+            }
+        }
+    }
+
+    int num_dates = (int) lst_dates.size();
+    int counts[38];
+
+    for (int &count: counts) {
+        count = 0;
+    }
+
+    for (int i = 0; i < num_dates; i++) {
+        int d = lst_dates[i][1];
+        int m = lst_dates[i][0];
+        int joke = dates[d / 10][d % 10][m];
+        counts[joke]++;
+    }
+
+    int64_t count = 0;
+    for (int &c: counts) {
+        if (c >= 2) {
+            count += cal_large_ckn(2, c);
+        }
+    }
+    return count;
 }
 #endif
 
