@@ -4,6 +4,7 @@
 #include "alg/my_algorithm.h"
 #include "vector"
 #include "cmath"
+#include "string"
 
 #if 0
 //https://www.hackerrank.com/challenges/harry-potter-and-the-floating-rocks/problem
@@ -133,7 +134,7 @@ double solve(std::vector<std::vector<int>> coordinates) {
 
 #if 0
 // https://www.hackerrank.com/challenges/jim-and-the-jokes
-int64_t solve(const std::vector<std::vector<int>> &lst_dates) {
+long long solve(const vector<vector<int>> &lst_dates) {
     int dates[4][10][13];
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 10; j++) {
@@ -160,13 +161,109 @@ int64_t solve(const std::vector<std::vector<int>> &lst_dates) {
         counts[joke]++;
     }
 
-    int64_t count = 0;
+    long long count = 0;
     for (int &c: counts) {
         if (c >= 2) {
-            count += cal_large_ckn(2, c);
+            count += c *(c-1)/2;
         }
     }
     return count;
+}
+#endif
+
+#if 0
+// https://www.hackerrank.com/challenges/possible-path
+std::string solve(long a, long b, long x, long y) {
+    if(find_gcd(a, b) == find_gcd(x, y)){
+        return "YES";
+    }
+    return "NO";
+}
+#endif
+
+#if 0
+// https://www.hackerrank.com/challenges/mutual-recurrences
+const uint64_t MAX = 1000000000000000000;
+const uint64_t N = 1000000000;
+std::map<uint64_t, uint64_t> fib_map;
+
+// Returns n'th fibonacci number using table fib_map
+uint64_t find_fib(uint64_t n) {
+    if (n == 0)
+        return 0;
+    if (n == 1 || n == 2) {
+        return 1;
+    }
+    if (fib_map.count(n)) {
+        return fib_map[n];
+    }
+
+    uint64_t k = (n & 1) ? (n + 1) / 2 : n / 2;
+
+    fib_map[n] = (n & 1) ? (find_fib(k) * find_fib(k) + find_fib(k - 1) * find_fib(k - 1)) :
+                 (2 * find_fib(k - 1) + find_fib(k)) * find_fib(k);
+    fib_map[n] = fib_map[n] % N;
+    return fib_map[n];
+}
+
+#define MOD 1000000000
+vector<int> solve(int a, int b, int c, int d, int e, int f, int g, int h, long n) {
+    int64_t x[10], y[10], dn = 1, hn = 1, xn, yn;
+    int64_t xna, ynb, ync, yne, xnf, xng;
+
+    for (int nn = 0; nn < 10; nn++) {
+        xna = nn - a >= 0 ? x[nn - a] : 1;
+        ynb = nn - b >= 0 ? y[nn - b] : 1;
+        ync = nn - c >= 0 ? y[nn - c] : 1;
+        yne = nn - e >= 0 ? y[nn - e] : 1;
+        xnf = nn - f >= 0 ? x[nn - f] : 1;
+        xng = nn - g >= 0 ? x[nn - g] : 1;
+
+        x[nn] = (xna + ynb + ync + nn * dn) % MOD;
+        y[nn] = (yne + xnf + xng + nn * hn) % MOD;
+        dn = (dn * d) % MOD;
+        hn = (hn * h) % MOD;
+    }
+
+    for (int64_t nn = 10; nn <= n; nn++) {
+        xn = (x[10 - a] + y[10 - b] + y[10 - c] + nn * dn) % MOD;
+        yn = (y[10 - e] + x[10 - f] + x[10 - g] + nn * hn) % MOD;
+        dn = (dn * d) % MOD;
+        hn = (hn * h) % MOD;
+        for (int i = 0; i < 9; i++) {
+            x[i] = x[i + 1];
+            y[i] = y[i + 1];
+        }
+        x[9] = xn;
+        y[9] = yn;
+    }
+
+    return {(int) xn, (int) yn};
+}
+#endif
+
+#if 0
+// https://www.hackerrank.com/challenges/constructing-a-number
+string canConstruct(vector<int> a) {
+    int sum = 0;
+    for (auto x: a) {
+        int s = x;
+        while (s > 0) {
+            sum += s % 10;
+            s = s / 10;
+        }
+    }
+    if (sum % 3 == 0) {
+        return "YES";
+    }
+    return "NO";
+}
+#endif
+
+#if 0
+int closestNumber(int a, int b, int x) {
+    auto r = pow(a, b) / x;
+    return (int) (round(r) * x);
 }
 #endif
 

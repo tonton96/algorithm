@@ -3,6 +3,7 @@
 
 #include "cstdint"
 #include "vector"
+using namespace std;
 
 /**
  * Finding the greatest common divisor of a, b
