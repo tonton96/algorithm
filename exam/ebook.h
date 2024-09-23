@@ -3,6 +3,11 @@
 #include "algorithm"
 #include "cmath"
 
+namespace test2_p165
+{
+
+}
+
 namespace test3_p165
 {
     const int MAX_SIXE = 128;
@@ -59,7 +64,10 @@ namespace test3_p165
     {
         for (int i = 0; i < size; i++)
         {
-            table[i][i] = 1;
+            for (int j = 0; j < size; j++)
+            {
+                table[i][j] = 0;
+            }
         }
     }
 
@@ -68,31 +76,22 @@ namespace test3_p165
         int size = input.size();
         init(size);
 
-        int N = input.size();
-        for (int j = 1; j < N; j++)
+        for (int j = 1; j < size; j++)
         {
-            for (int i = 0; i < N - j; i++)
+            for (int i = 0; i < size - j; i++)
             {
                 int from = i;
                 int to = j + i;
-                if (from + 1 <= to - 1)
+                if (input[from] == input[to])
                 {
-                    if (input[from] == input[to])
-                    {
-                        table[from][to] = table[from + 1][to - 1];
-                    }
-                    else
-                    {
-                        table[from][to] = std::min(table[from + 1][to], table[from][to - 1]) + 1;
-                    }
+                    table[from][to] = table[from + 1][to - 1];
                 }
                 else
                 {
-                    table[i][j] = std::min(table[from + 1][to], table[from][to - 1]) + 1;
+                    table[from][to] = std::min(table[from + 1][to], table[from][to - 1]) + 1;
                 }
             }
         }
-        auto val = table[0][size - 1];
 
         return trace(input);
     }
@@ -100,6 +99,7 @@ namespace test3_p165
     void test()
     {
         std::string S = "abcdefg_hh_gfe_1_d_2_c_3_ba";
-        std::cout << "Output T: " << handler(S) << std::endl;
+        std::string T = handler(S);
+        std::cout << "Output T: " << T << std::endl;
     }
 }
