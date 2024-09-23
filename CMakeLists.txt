@@ -3,5 +3,5 @@ project(algorithm)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(algorithm1 main.cpp alg/my_algorithm.cpp alg/my_algorithm.h hacker_rank.h)
+add_executable(algorithm main.cpp alg/my_algorithm.cpp alg/my_algorithm.h exam/hacker_rank.h exam/ebook.h)
 
