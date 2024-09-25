@@ -5,7 +5,113 @@
 
 namespace test2_p165
 {
+    void init(const std::string &s1, const std::string &s2, std::vector<std::vector<int>> &table)
+    {
+        auto num_rows = s1.size();
+        auto num_cols = s2.size();
 
+        table.resize(num_rows);
+        for (auto &r : table)
+        {
+            r.resize(num_cols);
+        }
+
+        for (int i = 0; i < num_cols; i++)
+        {
+            if (s1[0] == s2[i])
+            {
+
+                for (int j = i; j < num_cols; j++)
+                {
+                    table[0][j] = 1;
+                }
+                break;
+            }
+        }
+        for (int i = 0; i < num_rows; i++)
+        {
+            if (s2[0] == s1[i])
+            {
+
+                for (int j = i; j < num_rows; j++)
+                {
+                    table[j][0] = 1;
+                }
+                break;
+            }
+        }
+    }
+
+    std::string trace(const std::string &s1, const std::string &s2, std::vector<std::vector<int>> &table)
+    {
+        std::string result;
+        int num_rows = s1.size(), num_cols = s2.size();
+        result.reserve(std::max(num_rows, num_cols));
+        int r = num_rows - 1, c = num_cols - 1;
+        while (true)
+        {
+            if (s1[r] == s2[c])
+            {
+                result.push_back(s1[r]);
+                r--;
+                c--;
+            }
+            else
+            {
+                if (table[r][c] == table[r - 1][c - 1])
+                {
+                    r--;
+                    c--;
+                }
+                else if (table[r][c] == table[r - 1][c])
+                {
+                    r--;
+                }
+                else
+                {
+                    c--;
+                }
+            }
+
+            if (r < 0 || c < 0)
+            {
+                break;
+            }
+        }
+
+        std::reverse(result.begin(), result.end());
+        return result;
+    }
+
+    std::string handler(const std::string &s1, const std::string &s2)
+    {
+        std::vector<std::vector<int>> table;
+        init(s1, s2, table);
+
+        int num_rows = s1.size(), num_cols = s2.size();
+        for (int r = 1; r < num_rows; r++)
+        {
+            for (int c = 1; c < num_cols; c++)
+            {
+                if (s1[r] == s2[c])
+                {
+                    table[r][c] = table[r - 1][c - 1] + 1;
+                }
+                else
+                {
+                    table[r][c] = std::max(table[r - 1][c - 1], std::max(table[r][c - 1], table[r - 1][c]));
+                }
+            }
+        }
+
+        return trace(s1, s2, table);
+    }
+
+    void test(){
+        std::string s1 = "abcdefghi123";
+        std::string s2 = "abc1def2ghi3";
+        std::cout << "Output: " << handler(s1, s2);
+    }
 }
 
 namespace test3_p165
@@ -98,8 +204,8 @@ namespace test3_p165
 
     void test()
     {
-        std::string S = "abcdefg_hh_gfe_1_d_2_c_3_ba";
+        std::string S = "edbabcd";
         std::string T = handler(S);
-        std::cout << "Output T: " << T << std::endl;
+        std::cout << "Output: " << T << std::endl;
     }
 }

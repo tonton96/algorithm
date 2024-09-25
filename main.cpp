@@ -12,6 +12,6 @@ using namespace alg;
 
 int main()
 {
-    test3_p165::test();
+    test2_p165::test();
     return 0;
 }
