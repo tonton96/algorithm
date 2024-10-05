@@ -180,7 +180,8 @@ namespace test1_150
     }
 
     // Solution 3
-    struct Node{
+    struct Node
+    {
         char val = 0;
         int cost = 0;
         Node *parent = nullptr;
@@ -188,10 +189,11 @@ namespace test1_150
         Node *right = nullptr;
     };
 
-    void convert(const std::string&str, int p, int q, std::vector<Node> &tree){
+    void convert(const std::string &str, int p, int q, std::vector<Node> &tree)
+    {
         std::string stack, postfix;
         stack.reserve(str.size());
-        postfix.reserve(str.size());        
+        postfix.reserve(str.size());
 
         std::map<char, int> cost;
         cost['*'] = cost['+'] = 1;
@@ -205,13 +207,16 @@ namespace test1_150
                 stack.push_back(c);
                 break;
             case ')':
-                while(!stack.empty()){
+                while (!stack.empty())
+                {
                     auto i = stack.back();
                     stack.pop_back();
-                    if(i == '('){
+                    if (i == '(')
+                    {
                         break;
                     }
-                    else{
+                    else
+                    {
                         postfix.push_back(i);
                     }
                 }
@@ -226,7 +231,8 @@ namespace test1_150
                         postfix.push_back(i);
                         stack.pop_back();
                     }
-                    else{
+                    else
+                    {
                         break;
                     }
                 }
@@ -251,7 +257,7 @@ namespace test1_150
         {
             auto &c = postfix[i];
             auto &node = tree[i];
-            
+
             switch (c)
             {
             case '*':
@@ -270,7 +276,7 @@ namespace test1_150
                 node.val = c;
                 node.cost = 0;
                 node.left = nullptr;
-                node.right = nullptr;     
+                node.right = nullptr;
                 node.parent = nullptr;
                 break;
             }
@@ -279,15 +285,166 @@ namespace test1_150
         }
     }
 
-    void handler(const std::string &str, int p, int q){
+    void findStr(const Node *node, std::string &str)
+    {
+        if ((node->left == nullptr) && (node->right == nullptr))
+        {
+            str.push_back(node->val);
+        }
+        else
+        {
+            str.push_back('(');
+            if (node->left != nullptr)
+            {
+                findStr(node->left, str);
+            }
+
+            str.push_back(node->val);
+
+            if (node->right != nullptr)
+            {
+                findStr(node->right, str);
+            }
+
+            str.push_back(')');
+        }
+    }
+
+    void recalc(Node *node, int p, int q)
+    {
+        while (true)
+        {
+            node->cost = std::max(node->left->cost, node->right->cost);
+            node->cost += (node->val == '+') ? p : q;
+            if (node->parent == nullptr)
+            {
+                break;
+            }
+            node = node->parent;
+        }
+    }
+
+    void handler(const std::string &str, int p, int q)
+    {
         std::vector<Node> tree;
         convert(str, p, q, tree);
+        const auto cost = tree.back().cost;
 
-        auto cost = tree.back().cost;
-        std::cout << cost << std::endl; // [1]
+        while (true)
+        {
+            bool found = false;
+            for (auto &node : tree)
+            {
+                if (node.val != '*' && node.val != '+')
+                {
+                    continue;
+                }
+
+                if (node.left->val == node.val)
+                {
+                    auto n1 = node.left->left;
+                    auto n2 = node.left->right;
+                    auto n3 = node.right;
+
+                    if (n1->cost >= n2->cost && n1->cost > n3->cost)
+                    {
+                        node.right = n1;
+                        node.left->left = n3;
+                        recalc(node.left, p, q);
+                        found = true;
+                        break;
+                    }
+
+                    if (n2->cost >= n1->cost && n2->cost > n3->cost)
+                    {
+                        node.right = n2;
+                        node.left->right = n3;
+                        recalc(node.left, p, q);
+                        found = true;
+                        break;
+                    }
+                }
+                else if (node.right->val == node.val)
+                {
+                    auto n1 = node.right->left;
+                    auto n2 = node.right->right;
+                    auto n3 = node.left;
+
+                    if (n1->cost >= n2->cost && n1->cost > n3->cost)
+                    {
+                        node.left = n1;
+                        node.right->left = n3;
+                        recalc(node.right, p, q);
+                        found = true;
+                        break;
+                    }
+
+                    if (n2->cost >= n1->cost && n2->cost > n3->cost)
+                    {
+                        node.left = n2;
+                        node.right->right = n3;
+                        recalc(node.right, p, q);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (node.left->val == node.val && node.right->val == node.val)
+                {
+                    auto n1 = node.left->left;
+                    auto n2 = node.left->right;
+                    auto n3 = node.right->left;
+                    auto n4 = node.right->right;
+                    if (n1->cost > n2->cost)
+                    {
+                        auto tg = n1;
+                        n1 = n2;
+                        n2 = tg;
+                    }
+                    if (n3->cost > n4->cost)
+                    {
+                        auto tg = n3;
+                        n3 = n4;
+                        n4 = n3;
+                    }
+
+                    if (n1->cost < n3->cost && n4->cost > n2->cost)
+                    {
+                        node.left->left = n1;
+                        node.left->right = n4;
+                        node.right->left = n2;
+                        node.right->right = n3;
+                        recalc(&node, p, q);
+                        found = true;
+                        break;
+                    }
+
+                    if (n2->cost > n4->cost && n3->cost < n1->cost)
+                    {
+                        node.left->left = n3;
+                        node.left->right = n2;
+                        node.right->left = n1;
+                        node.right->right = n4;
+                        recalc(&node, p, q);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                break;
+            }
+        }
 
         std::string minStr;
-        std::cout << minStr; //[2]
+        auto min_cost = tree.back().cost;
+        findStr(&tree.back(), minStr);
+
+        std::cout << cost << std::endl;     // Line 1
+        std::cout << minStr << std::endl;   // Line 2
+        std::cout << min_cost << std::endl; // Line 3
     }
 
     void test()
@@ -296,9 +453,8 @@ namespace test1_150
         // std::string str = "a+(a+(a+(a+(a+(a+(a+a))))))";
         // std::string str = "(((a+(b+(c+d)))*e)*f)";
         std::string str = "(((((a*b)*c)*d)+e)+(f*g))";
-        // auto t = handler(str, 0, str.size() - 1, 1, 1);
-        handler(str, 1, 1);
-        std::cout << str;
+        int p = 1, q = 1;
+        handler(str, p, q);
     }
 }
 
