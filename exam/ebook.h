@@ -458,6 +458,159 @@ namespace test1_150
     }
 }
 
+namespace test2_150
+{
+    const int MAX_VAL = 50;
+    int primes[MAX_VAL + 1];
+    int table1[MAX_VAL + 1][MAX_VAL + 1]; // table1[i][j]: so phan tu toi da (primes[0 - i]) co tong = j
+    int table2[MAX_VAL + 1];              // Tinh B
+    int num_primes = 0;
+
+    bool checkPrime(int val)
+    {
+        if (val < 2)
+        {
+            return false;
+        }
+        for (int i = 2; i < val; i++)
+        {
+            if (val % i == 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void findTable()
+    {
+        num_primes = 0;
+        for (int i = 0; i <= MAX_VAL; i++)
+        {
+            if (checkPrime(i))
+            {
+                primes[num_primes++] = i;
+            }
+        }
+
+        for (int r = 0; r < num_primes; r++)
+        {
+            for (int c = 0; c <= MAX_VAL; c++)
+            {
+                table1[r][c] = 0;
+            }
+        }
+
+        for (int i = 0; i < num_primes; i++)
+        {
+            table1[i][0] = table1[i][1] = 0;
+            table1[i][2] = 1;
+        }
+
+        for (int r = 1; r < num_primes; r++)
+        {
+            for (int c = 3; c <= MAX_VAL; c++)
+            {
+                table1[r][c] = table1[r - 1][c];
+                if (c > primes[r])
+                {
+                    if (table1[r - 1][c - primes[r]] > 0)
+                    {
+                        table1[r][c] = std::max(1 + table1[r - 1][c - primes[r]], table1[r][c]);
+                    }
+                }
+                else if(c == primes[r]){
+                    table1[r][c] = std::max(1, table1[r][c]);
+                }
+            }
+        }
+
+        for (int n = 0; n <= MAX_VAL; n++)
+        {
+            table2[n] = table1[num_primes - 1][n];
+            for (int i = 0; i < num_primes; i++)
+            {
+                if (n >= primes[i])
+                {
+                    if (table1[num_primes - 1][n - primes[i]] > 0)
+                    {
+                        table2[n] = std::max(table2[n], 1 + table1[num_primes - 1][n - primes[i]]);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    int getVal(int a){
+        return table2[a];
+    }
+    
+
+    void test(){
+        findTable();
+
+        // Get A
+        const int N = 2, M = 3;
+        int A[N][M] = {{10, 12, 11},
+                       {8, 3, 7}};
+
+        // Calc B -> print OUT1
+        int B[N][M]{};
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < M; j++)
+            {
+                B[i][j] = getVal(A[i][j]);
+                std::cout << B[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        int max_r = 0, max_c = 0, max_s = 1, max_dr = 1, max_dc = 1;
+        for (int r = 0; r < N; r++)
+        {
+            for (int c = 0; c < M; c++)
+            {
+                int dc = 1, dr = 1;
+                while (r + dr < N)
+                {
+                    if (B[r][c] != B[r + dr][c])
+                    {
+                        break;
+                    }
+                    dr++;
+                }
+                while (c + dc < M)
+                {
+                    if (B[r][c] != B[r][c + dc])
+                    {
+                        break;
+                    }
+                    dc++;
+                }
+
+                if (dc * dr > max_s)
+                {
+                    max_s = dc * dr;
+                    max_dc = dc;
+                    max_dr = dr;
+                    max_r = r;
+                    max_c = c;
+                }
+            }
+        }
+
+        // Print OUT2
+        std::cout << max_s << " " << max_r << " " << max_c << " " << max_r + max_dr - 1 
+        << " " << max_c + max_dc - 1 << std::endl;
+    }
+}
+
 namespace test2_p165
 {
     void init(const std::string &s1, const std::string &s2, std::vector<std::vector<int>> &table)
