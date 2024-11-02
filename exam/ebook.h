@@ -520,7 +520,8 @@ namespace test2_150
                         table1[r][c] = std::max(1 + table1[r - 1][c - primes[r]], table1[r][c]);
                     }
                 }
-                else if(c == primes[r]){
+                else if (c == primes[r])
+                {
                     table1[r][c] = std::max(1, table1[r][c]);
                 }
             }
@@ -546,12 +547,13 @@ namespace test2_150
         }
     }
 
-    int getVal(int a){
+    int getVal(int a)
+    {
         return table2[a];
     }
-    
 
-    void test(){
+    void test()
+    {
         findTable();
 
         // Get A
@@ -606,8 +608,241 @@ namespace test2_150
         }
 
         // Print OUT2
-        std::cout << max_s << " " << max_r << " " << max_c << " " << max_r + max_dr - 1 
-        << " " << max_c + max_dc - 1 << std::endl;
+        std::cout << max_s << " " << max_r << " " << max_c << " " << max_r + max_dr - 1
+                  << " " << max_c + max_dc - 1 << std::endl;
+    }
+}
+
+namespace test3_150
+{
+    const int INF = 1e9, UNASSIGN = -1;
+
+    // Dijkstra algorithm
+    void find_path(const std::vector<std::vector<int>> &cost, int start, int stop,
+                   std::vector<int> &min_path, int &len_path)
+    {
+        int num_points = cost.size();
+        std::vector<bool> free(num_points, true);
+        std::vector<int> dist(num_points, INF);
+        std::vector<int> trace(num_points, UNASSIGN);
+
+        dist[start] = 0;
+        while (true)
+        {
+            int min_dist = INF, min_point = UNASSIGN;
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point])
+                {
+                    if (dist[point] < min_dist)
+                    {
+                        min_dist = dist[point];
+                        min_point = point;
+                    }
+                }
+            }
+
+            if (min_point == UNASSIGN)
+            {
+                break;
+            }
+
+            free[min_point] = false;
+            if (min_point == stop)
+            {
+                break;
+            }
+
+            for (int point = 0; point < num_points; point++)
+            {
+                if (cost[min_point][point] < INF && free[point])
+                {
+                    auto i = cost[min_point][point];
+                    auto j = dist[min_point];
+                    dist[point] = dist[min_point] + cost[min_point][point];
+                    trace[point] = min_point;
+                }
+            }
+        }
+
+        
+
+        min_path.clear();
+        len_path = 0;
+        if (!free[stop])
+        {
+            len_path = dist[stop];
+            min_path.reserve(num_points);
+
+            int point = stop;
+            while (true)
+            {
+                min_path.push_back(point);
+                if (point == start)
+                {
+                    break;
+                }
+                point = trace[point];
+            }
+        }
+        std::reverse(min_path.begin(), min_path.end());
+    }
+
+    // Dijkstra algorithm
+    int min_path(const std::vector<std::vector<int>> &cost, int start, int stop)
+    {
+        int num_points = cost.size();
+        std::vector<bool> free(num_points, true);
+        std::vector<int> dist(num_points, INF);
+        std::vector<int> trace(num_points, UNASSIGN);
+
+        dist[start] = 0;
+        while (true)
+        {
+            int min_dist = INF, min_point = UNASSIGN;
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point])
+                {
+                    if (dist[point] < min_dist)
+                    {
+                        min_dist = dist[point];
+                        min_point = point;
+                    }
+                }
+            }
+
+            if (min_point == UNASSIGN)
+            {
+                break;
+            }
+
+            free[min_point] = false;
+            if (min_point == stop)
+            {
+                break;
+            }
+
+            for (int point = 0; point < num_points; point++)
+            {
+                if (cost[min_point][point] < INF && free[point])
+                {
+                    auto i = cost[min_point][point];
+                    auto j = dist[min_point];
+                    dist[point] = dist[min_point] + cost[min_point][point];
+                    trace[point] = min_point;
+                }
+            }
+        }
+
+        int len_path = -1;
+        if (!free[stop])
+        {
+            len_path = dist[stop];
+        }
+        return len_path;
+    }
+
+    void handler(const std::vector<std::string> &map)
+    {
+        int num_rows = map.size();
+        int num_cols = map.size() > 0 ? map[0].size() : 0;
+        int num_points = num_rows * num_cols;
+
+        if (num_points == 0)
+        {
+            return;
+        }
+
+        std::vector<std::vector<int>> cv_map;
+        cv_map.resize(num_points);
+        for (auto &r : cv_map)
+        {
+            r.resize(num_points, INF);
+        }
+
+        int start = 39, stop = 33;
+        for (int r = 0; r < num_rows; r++)
+        {
+            for (int c = 0; c < num_cols; c++)
+            {
+                int id = r * num_cols + c; 
+
+                if (map[r][c] == '.')
+                {
+                    int ru = r - 1, cu = c;
+                    if (ru >= 0 && ru < num_rows && cu >= 0 && cu < num_cols)
+                    {
+                        if (map[ru][cu] == '.')
+                        {
+                            int idu = ru * num_cols + cu;
+                            cv_map[id][idu] = cv_map[idu][id] = 1;
+                        }
+                    }
+
+                    int rd = r + 1, cd = c;
+                    if (rd >= 0 && rd < num_rows && cd >= 0 && cd < num_cols)
+                    {
+                        if (map[rd][cd] == '.')
+                        {
+                            int idd = rd * num_cols + cd;
+                            cv_map[id][idd] = cv_map[idd][id] = 1;
+                        }
+                    }
+
+                    int rl = r, cl = c - 1;
+                    if (rl >= 0 && rl < num_rows && cl >= 0 && cl < num_cols)
+                    {
+                        if (map[rl][cl] == '.')
+                        {
+                            int idl = rl * num_cols + cl;
+                            cv_map[id][idl] = cv_map[idl][id] = 1;
+                        }
+                    }
+
+                    int rr = r, cr = c + 1;
+                    if (rr >= 0 && rr < num_rows && cr >= 0 && cr < num_cols)
+                    {
+                        if (map[rr][cr] == '.')
+                        {
+                            int idr = rr * num_cols + cr;
+                            cv_map[id][idr] = cv_map[idr][id] = 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        std::vector<int> min_path;
+        int len_path;
+        find_path(cv_map, start, stop, min_path, len_path);
+
+        std::vector<std::string> new_map = map;
+        int cnt = 0;
+        for (auto p : min_path)
+        {
+            int r = p / num_cols;
+            int c = p % num_rows;
+            new_map[r][c] = (cnt++ % 10) + '0';
+        }
+
+        for (auto &s : new_map)
+        {
+            std::cout << s << std::endl;
+        }
+    }
+
+    void test()
+    {
+        std::vector<std::string> map = {"########",
+                                        "........",
+                                        ".....###",
+                                        "........",
+                                        "#.#####.",
+                                        "........",
+                                        "........",
+                                        "........"};
+        handler(map);
     }
 }
 
