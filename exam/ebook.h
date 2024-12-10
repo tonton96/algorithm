@@ -655,20 +655,16 @@ namespace test3_150
 
             for (int point = 0; point < num_points; point++)
             {
-                if (cost[min_point][point] < INF && free[point])
+                if (free[point] && (dist[point] > dist[min_point] + cost[min_point][point]))
                 {
-                    auto i = cost[min_point][point];
-                    auto j = dist[min_point];
                     dist[point] = dist[min_point] + cost[min_point][point];
                     trace[point] = min_point;
                 }
             }
         }
 
-        
-
         min_path.clear();
-        len_path = 0;
+        len_path = INF;
         if (!free[stop])
         {
             len_path = dist[stop];
@@ -688,160 +684,229 @@ namespace test3_150
         std::reverse(min_path.begin(), min_path.end());
     }
 
-    // Dijkstra algorithm
-    int min_path(const std::vector<std::vector<int>> &cost, int start, int stop)
+    int min_path(const std::vector<std::string> &map, int fr, int fc, int tr, int tc)
     {
-        int num_points = cost.size();
-        std::vector<bool> free(num_points, true);
-        std::vector<int> dist(num_points, INF);
-        std::vector<int> trace(num_points, UNASSIGN);
+        const char wall = '#';
+        int num_rows = map.size();
+        int num_cols = map.empty() ? 0 : map[0].size();
+        int total_points = num_rows * num_cols;
 
-        dist[start] = 0;
-        while (true)
+        if (fr < 0 || fr >= num_rows || fc < 0 || fc >= num_cols)
         {
-            int min_dist = INF, min_point = UNASSIGN;
-            for (int point = 0; point < num_points; point++)
+            return INF;
+        }
+
+        if (tr < 0 || tr >= num_rows || tc < 0 || tc >= num_cols)
+        {
+            return INF;
+        }
+
+        if (map[fr][fc] == wall || map[tr][tc] == wall)
+        {
+            return INF;
+        }
+
+        static std::vector<vector<bool>> visited;
+        visited.resize(num_rows);
+        for (auto &i : visited)
+        {
+            i.resize(num_cols);
+            for (auto &j : i)
+                j = false;
+        }
+
+        static std::vector<std::vector<int>> cost;
+        cost.resize(num_rows);
+        for (auto &i : cost)
+        {
+            i.resize(num_cols);
+            for (auto &j : i)
+                j = INF;
+        }
+
+        std::vector<int> queue;
+        queue.resize(num_cols * num_rows);
+
+        int start_queue = 0, end_queue = 1;
+        queue[start_queue] = fr * num_cols + fc;
+        cost[fr][fc] = 0;
+        visited[fr][fc] = true;
+
+        const int delta[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        while (end_queue > start_queue)
+        {
+            int r = queue[start_queue] / num_cols;
+            int c = queue[start_queue] % num_cols;
+            start_queue++;
+
+            for (int i = 0; i < 4; i++)
             {
-                if (free[point])
+                int nr = r + delta[i][0];
+                int nc = c + delta[i][1];
+                if (nr >= 0 && nr < num_rows && nc >= 0 && nc < num_cols)
                 {
-                    if (dist[point] < min_dist)
+                    if (map[nr][nc] != wall && !visited[nr][nc])
                     {
-                        min_dist = dist[point];
-                        min_point = point;
+                        queue[end_queue] = nr * num_cols + nc;
+                        end_queue++;
+                        cost[nr][nc] = cost[r][c] + 1;
+                        visited[nr][nc] = true;
                     }
                 }
             }
 
-            if (min_point == UNASSIGN)
-            {
+            if(cost[tr][tc] != INF){
                 break;
-            }
-
-            free[min_point] = false;
-            if (min_point == stop)
-            {
-                break;
-            }
-
-            for (int point = 0; point < num_points; point++)
-            {
-                if (cost[min_point][point] < INF && free[point])
-                {
-                    auto i = cost[min_point][point];
-                    auto j = dist[min_point];
-                    dist[point] = dist[min_point] + cost[min_point][point];
-                    trace[point] = min_point;
-                }
             }
         }
 
-        int len_path = -1;
-        if (!free[stop])
-        {
-            len_path = dist[stop];
-        }
-        return len_path;
+        return cost[tr][tc];
     }
 
-    void handler(const std::vector<std::string> &map)
+    void map2cost(std::vector<std::string> map, std::vector<std::vector<int>> &cost)
     {
         int num_rows = map.size();
-        int num_cols = map.size() > 0 ? map[0].size() : 0;
-        int num_points = num_rows * num_cols;
-
-        if (num_points == 0)
+        int num_cols = map.empty() ? 0 : map[0].size();
+        int total_points = 4 * num_rows * num_cols;
+        cost.resize(total_points);
+        for (auto &i : cost)
         {
-            return;
+            i.resize(total_points, INF);
         }
 
-        std::vector<std::vector<int>> cv_map;
-        cv_map.resize(num_points);
-        for (auto &r : cv_map)
-        {
-            r.resize(num_points, INF);
-        }
+        const char space = '.', wall ='#';
+        const int delta[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-        int start = 39, stop = 33;
         for (int r = 0; r < num_rows; r++)
         {
             for (int c = 0; c < num_cols; c++)
             {
-                int id = r * num_cols + c; 
-
-                if (map[r][c] == '.')
+                if (map[r][c] != wall)
                 {
-                    int ru = r - 1, cu = c;
-                    if (ru >= 0 && ru < num_rows && cu >= 0 && cu < num_cols)
+                    for (int h = 0; h < 4; h++)
                     {
-                        if (map[ru][cu] == '.')
+                        int pr = r + delta[h][0];
+                        int pc = c + delta[h][1];
+                        if (pr >= 0 && pr < num_rows && pc >= 0 && pc < num_cols)
                         {
-                            int idu = ru * num_cols + cu;
-                            cv_map[id][idu] = cv_map[idu][id] = 1;
-                        }
-                    }
+                            if (map[pr][pc] != wall)
+                            {
+                                auto val = map[r][c];
+                                map[r][c] = wall;
 
-                    int rd = r + 1, cd = c;
-                    if (rd >= 0 && rd < num_rows && cd >= 0 && cd < num_cols)
-                    {
-                        if (map[rd][cd] == '.')
-                        {
-                            int idd = rd * num_cols + cd;
-                            cv_map[id][idd] = cv_map[idd][id] = 1;
-                        }
-                    }
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    int nr = r + delta[i][0];
+                                    int nc = c + delta[i][1];
+                                    if (nr >= 0 && nr < num_rows && nc >= 0 && nc < num_cols)
+                                    {
+                                        int rr = r - delta[i][0];
+                                        int cc = c - delta[i][1];
+                                        if (rr >= 0 && rr < num_rows && cc >= 0 && cc < num_cols)
+                                        {
+                                            auto val = min_path(map, pr, pc, nr, nc) + 1;
+                                            cost[h * num_cols * num_rows + r * num_cols + c][i * num_cols * num_rows + rr * num_cols + cc] = val;
+                                        }
+                                    }
+                                }
 
-                    int rl = r, cl = c - 1;
-                    if (rl >= 0 && rl < num_rows && cl >= 0 && cl < num_cols)
-                    {
-                        if (map[rl][cl] == '.')
-                        {
-                            int idl = rl * num_cols + cl;
-                            cv_map[id][idl] = cv_map[idl][id] = 1;
-                        }
-                    }
-
-                    int rr = r, cr = c + 1;
-                    if (rr >= 0 && rr < num_rows && cr >= 0 && cr < num_cols)
-                    {
-                        if (map[rr][cr] == '.')
-                        {
-                            int idr = rr * num_cols + cr;
-                            cv_map[id][idr] = cv_map[idr][id] = 1;
+                                map[r][c] = val;
+                            }
                         }
                     }
                 }
             }
         }
+    }
 
-        std::vector<int> min_path;
-        int len_path;
-        find_path(cv_map, start, stop, min_path, len_path);
+    void handler(std::vector<std::string> map)
+    {
+        int num_rows = map.size();
+        int num_cols = map.empty() ? 0 : map[0].size();
 
-        std::vector<std::string> new_map = map;
-        int cnt = 0;
-        for (auto p : min_path)
+        std::vector<std::vector<int>> cost;
+        map2cost(map, cost);
+
+        const char start = '$', stop = '@', star = '*', wall = '#';
+        int start_r, start_c, stop_r, stop_c, star_r, star_c;
+        for (int r = 0; r < num_rows; r++)
         {
-            int r = p / num_cols;
-            int c = p % num_rows;
-            new_map[r][c] = (cnt++ % 10) + '0';
+            for (int c = 0; c < num_cols; c++)
+            {
+                if (map[r][c] == start)
+                {
+                    start_r = r;
+                    start_c = c;
+                }
+                else if (map[r][c] == stop)
+                {
+                    stop_r = r;
+                    stop_c = c;
+                }
+                else if (map[r][c] == star)
+                {
+                    star_r = r;
+                    star_c = c;
+                }
+            }
         }
 
-        for (auto &s : new_map)
+        const int delta[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int len[4];
+        auto tmp = map[start_r][start_c];
+        map[start_r][start_c] = wall;
+        for (int i = 0; i < 4; i++)
         {
-            std::cout << s << std::endl;
+            len[i] = min_path(map, star_r, star_c, start_r + delta[i][0], start_c + delta[i][1]);
         }
+        map[start_r][start_c] = tmp;
+
+        int len_path_ = INF;
+        std::vector<int> min_path_;
+        for (int i = 0; i < 4; i++)
+        {
+            int start = i * num_cols * num_rows + start_r * num_cols + start_c;
+            for (int j = 0; j < 4; j++)
+            {
+                int stop = j * num_cols * num_rows + stop_r * num_cols + stop_c;
+                int len_path;
+                std::vector<int> min_path;
+                find_path(cost, start, stop, min_path, len_path);
+                len_path += len[i];
+
+                if (len_path < len_path_)
+                {
+                    len_path_ = len_path;
+                    min_path_ = min_path;
+                }
+            }
+        }
+        for (auto val : min_path_)
+        {
+            int h = val / (num_cols * num_rows);
+            int r = (val - h * num_cols * num_rows) / num_cols;
+            int c = (val - h * num_cols * num_rows) % num_cols;
+            std::cout << r << " " << c << " " << h << std::endl;
+        }
+
+        std::cout << len_path_ << std::endl;
     }
 
     void test()
     {
-        std::vector<std::string> map = {"########",
-                                        "........",
-                                        ".....###",
-                                        "........",
-                                        "#.#####.",
-                                        "........",
-                                        "........",
-                                        "........"};
+        // std::vector<std::string> map = {"########",
+        //                                 "#.....@.",
+        //                                 ".....###",
+        //                                 "........",
+        //                                 "#.#####*",
+        //                                 ".$......",
+        //                                 "........",
+        //                                 "........"};
+        std::vector<std::string> map = {"@........",
+                                        ".##.###.#",
+                                        "......#..",
+                                        ".##$###.#",
+                                        ".*......."};
         handler(map);
     }
 }
