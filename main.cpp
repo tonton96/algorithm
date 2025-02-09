@@ -4,7 +4,8 @@
 #include "map"
 #include "sstream"
 #include "alg/my_algorithm.h"
-#include "exam/ebook.h"
+#include "exam/ebook_struct_algorithm.h"
+#include "exam/ebook_150_test.h"
 
 using namespace std;
 using namespace alg;
