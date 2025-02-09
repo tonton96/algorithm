@@ -1118,3 +1118,64 @@ namespace test3_150
         handler(map);
     }
 }
+
+namespace test4_150 {
+    void hander(const std::vector<int> &input, int k, std::vector<int> &result){
+        int n = input.size();
+        std::vector<std::vector<int>> mat;
+
+        mat.resize(k);
+        for(int i = 0; i < k; i++){
+            mat[i].resize(n);
+        }
+
+        for(int r = 0; r < k ; r++){
+            mat[r][0] = 0;
+        }
+        mat[input[0] % k][0] = 1;
+
+        for(int c = 1; c < n; c++){
+            for(int r = 0; r < k; r ++){
+                int val = r - input[c] % k;
+                if(val < 0){
+                    val += k;
+                }
+                mat[r][c] = std::min(mat[r][c - 1], mat[val][c - 1] + 1);
+            }
+        }
+
+        result.reserve(n);
+
+        int mod = 0;
+        for(auto &i: input){
+            mod += i % k;
+        }
+        mod = mod % k;
+        for(int c = n -1; c >= 1; c--){
+            if(mat[mod][c] == mat[mod][c - 1]){
+                // check[c] = false;
+                result.push_back(c);
+            }
+            else{
+                // check[c] = true;
+                mod = mod - input[c];
+                if(mod < 0){
+                    mod = k + mod;
+                }
+            }
+        }
+        if(mat[mod][0] > 0){
+            // check[0] = true;
+            // result.push_back(0);
+        }
+    }
+    
+    void test(){
+        std::vector<int> intput = {2, 3, 5, 7,  9, 6, 12, 7, 11, 15}, result;
+        int k = 3;
+        hander(intput, k, result);
+        for(auto i: result){
+            std:: cout << i << " ";
+        }
+    }
+}
