@@ -684,6 +684,120 @@ namespace test3_150
         std::reverse(min_path.begin(), min_path.end());
     }
 
+    // BFS
+    void find_path(const std::vector<std::string> &map, int fr, int fc, int tr, int tc,
+                  std::vector<std::vector<int>> &min_path, int &len_path)
+    {
+        const char wall = '#';
+        int num_rows = map.size();
+        int num_cols = map.empty() ? 0 : map[0].size();
+        int total_points = num_rows * num_cols;
+
+        min_path.clear();
+        len_path = INF;
+        if (fr < 0 || fr >= num_rows || fc < 0 || fc >= num_cols)
+        {
+            return;
+        }
+
+        if (tr < 0 || tr >= num_rows || tc < 0 || tc >= num_cols)
+        {
+            return;
+        }
+
+        if (map[fr][fc] == wall || map[tr][tc] == wall)
+        {
+            return;
+        }
+
+        static std::vector<vector<bool>> visited;
+        visited.resize(num_rows);
+        for (auto &i : visited)
+        {
+            i.resize(num_cols);
+            for (auto &j : i)
+                j = false;
+        }
+
+        static std::vector<std::vector<int>> cost;
+        cost.resize(num_rows);
+        for (auto &i : cost)
+        {
+            i.resize(num_cols);
+            for (auto &j : i)
+                j = INF;
+        }
+
+        static std::vector<std::vector<std::vector<int>>> trace;
+        trace.resize(num_rows);
+        for (auto &i : trace)
+        {
+            i.resize(num_cols);
+            for (auto &j : i)
+            {
+                j.resize(2);
+                j[0] = UNASSIGN;
+                j[1] = UNASSIGN;
+            }
+        }
+
+        std::vector<int> queue;
+        queue.resize(num_cols * num_rows);
+
+        int start_queue = 0, end_queue = 1;
+        queue[start_queue] = fr * num_cols + fc;
+        cost[fr][fc] = 0;
+        visited[fr][fc] = true;
+
+        const int delta[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        while (end_queue > start_queue)
+        {
+            int r = queue[start_queue] / num_cols;
+            int c = queue[start_queue] % num_cols;
+            start_queue++;
+
+            for (int i = 0; i < 4; i++)
+            {
+                int nr = r + delta[i][0];
+                int nc = c + delta[i][1];
+                if (nr >= 0 && nr < num_rows && nc >= 0 && nc < num_cols)
+                {
+                    if (map[nr][nc] != wall && !visited[nr][nc])
+                    {
+                        queue[end_queue] = nr * num_cols + nc;
+                        end_queue++;
+                        cost[nr][nc] = cost[r][c] + 1;
+                        visited[nr][nc] = true;
+                        trace[nr][nc][0] = r;
+                        trace[nr][nc][1] = c;
+                    }
+                }
+            }
+
+            if(cost[tr][tc] != INF){
+                break;
+            }
+        }
+
+        len_path = cost[tr][tc];
+        if (len_path != INF)
+        {
+            min_path.reserve(len_path + 1);
+            int r = tr, c = tc;
+            while(true)
+            {
+                min_path.push_back({r, c});
+                if (r == fr && c == fc)
+                {
+                    break;
+                }
+                r = trace[r][c][0];
+                c = trace[r][c][1];
+            }
+            std::reverse(min_path.begin(), min_path.end());
+        }
+    }
+
     int min_path(const std::vector<std::string> &map, int fr, int fc, int tr, int tc)
     {
         const char wall = '#';
@@ -881,15 +995,109 @@ namespace test3_150
                 }
             }
         }
+
+        std::vector<std::vector<int>> lst_pos;
+        lst_pos.reserve(min_path_.size());
         for (auto val : min_path_)
         {
             int h = val / (num_cols * num_rows);
             int r = (val - h * num_cols * num_rows) / num_cols;
             int c = (val - h * num_cols * num_rows) % num_cols;
-            std::cout << r << " " << c << " " << h << std::endl;
+            lst_pos.push_back({r, c, r + delta[h][0], c + delta[h][1]});
+        }
+        
+        std::string path;
+        path.reserve(len_path_);
+
+        tmp = map[start_r][start_c];
+        map[start_r][start_c] = wall;
+        std::vector<std::vector<int>> path0;
+        int len0;
+        find_path(map, star_r, star_c, lst_pos[0][2], lst_pos[0][3], path0, len0);
+        for (int i = 1; i < path0.size(); i++)
+        {
+            int dtr = path0[i][0] - path0[i - 1][0];
+            int dtc = path0[i][1] - path0[i - 1][1];
+            if (dtr == 1)
+            {
+                path.push_back('s');
+            }
+            else if (dtr == -1)
+            {
+                path.push_back('n');
+            }
+            if (dtc == 1)
+            {
+                path.push_back('e');
+            }
+            else if (dtc == -1)
+            {
+                path.push_back('w');
+            }
+        }
+        map[start_r][start_c] = tmp;
+
+        for (int i = 0; i < lst_pos.size() - 1; i++)
+        {
+            int r = lst_pos[i][2];
+            int c = lst_pos[i][3];
+            int rr = lst_pos[i][0];
+            int cc = lst_pos[i][1];
+            int nr = lst_pos[i + 1][2];
+            int nc = lst_pos[i + 1][3];
+
+            tmp = map[rr][cc];
+            map[rr][cc] = wall;
+            std::vector<std::vector<int>> path1;
+            int len1;
+            find_path(map, r, c, nr, nc, path1, len1);
+            for (int i = 1; i < path1.size() - 1; i++)
+            {
+                int dtr = path1[i][0] - path1[i - 1][0];
+                int dtc = path1[i][1] - path1[i - 1][1];
+                if (dtr == 1)
+                {
+                    path.push_back('s');
+                }
+                else if (dtr == -1)
+                {
+                    path.push_back('n');
+                }
+                if (dtc == 1)
+                {
+                    path.push_back('e');
+                }
+                else if (dtc == -1)
+                {
+                    path.push_back('w');
+                }
+            }
+            {
+                int j = path1.size() - 1;
+                int dtr = path1[j][0] - path1[j - 1][0];
+                int dtc = path1[j][1] - path1[j - 1][1];
+                if (dtr == 1)
+                {
+                    path.push_back('S');
+                }
+                else if (dtr == -1)
+                {
+                    path.push_back('N');
+                }
+                if (dtc == 1)
+                {
+                    path.push_back('E');
+                }
+                else if (dtc == -1)
+                {
+                    path.push_back('W');
+                }
+            }
+            map[rr][cc] = tmp;
         }
 
         std::cout << len_path_ << std::endl;
+        std::cout << path << std::endl;
     }
 
     void test()
