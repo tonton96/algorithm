@@ -1130,17 +1130,38 @@ namespace test4_150 {
         }
 
         for(int r = 0; r < k ; r++){
-            mat[r][0] = 0;
+            mat[r][0] = -1;
         }
         mat[input[0] % k][0] = 1;
+        for(int i =0; i < n; i++){
+            mat[0][i] = 0;
+        }
 
-        for(int c = 1; c < n; c++){
-            for(int r = 0; r < k; r ++){
+        for (int c = 1; c < n; c++)
+        {
+            for (int r = 1; r < k; r++)
+            {
                 int val = r - input[c] % k;
-                if(val < 0){
+                if (val < 0)
+                {
                     val += k;
                 }
-                mat[r][c] = std::min(mat[r][c - 1], mat[val][c - 1] + 1);
+                if (mat[val][c - 1] >= 0 && mat[r][c - 1] >= 0)
+                {
+                    mat[r][c] = std::min(mat[r][c - 1], mat[val][c - 1] + 1);
+                }
+                else if (mat[val][c - 1] >= 0)
+                {
+                    mat[r][c] = mat[val][c - 1] + 1;
+                }
+                else if (mat[r][c - 1] >= 0)
+                {
+                    mat[r][c] = mat[r][c - 1];
+                }
+                else
+                {
+                    mat[r][c] = -1;
+                }
             }
         }
 
@@ -1151,27 +1172,30 @@ namespace test4_150 {
             mod += i % k;
         }
         mod = mod % k;
+        auto val = mat[mod][n - 1];
+        if (val == -1)
+        {
+            return;
+        }
+
         for(int c = n -1; c >= 1; c--){
             if(mat[mod][c] == mat[mod][c - 1]){
-                // check[c] = false;
                 result.push_back(c);
             }
             else{
-                // check[c] = true;
                 mod = mod - input[c];
                 if(mod < 0){
                     mod = k + mod;
                 }
             }
         }
-        if(mat[mod][0] > 0){
-            // check[0] = true;
-            // result.push_back(0);
+        if(mat[mod][0] <= 0){
+            result.push_back(0);
         }
     }
     
     void test(){
-        std::vector<int> intput = {2, 3, 5, 7,  9, 6, 12, 7, 11, 15}, result;
+        std::vector<int> intput = {2, 7, 3, 5,  9, 6, 12, 7, 11, 15}, result;
         int k = 3;
         hander(intput, k, result);
         for(auto i: result){
