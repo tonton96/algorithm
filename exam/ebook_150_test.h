@@ -1203,3 +1203,78 @@ namespace test4_150 {
         }
     }
 }
+
+namespace test5_150{
+    const int N = 35;
+    const int M = 25;
+
+    std::vector<std::string> fn;
+
+    void findCost(const std::string &s, int n, std::vector<int> &cost){
+        fn.resize(n);
+        fn[0] = "A";
+        fn[1] = "B";
+
+        cost.resize(n);
+        cost[0] = cost[1] = 0;
+        for (int i = 2; i < n; i++)
+        {
+            fn[i] = fn[i - 2] + fn[i - 1];
+            auto &lst = fn;
+            auto &val = fn[i];
+            int count = 0;
+
+            int from = fn[i - 2].size() - s.size() + 1;
+            int to = fn[i - 2].size() - 1;
+
+            from = std::max(from, 0);
+            to = std::min(to, (int)(fn[i].size() - s.size()));
+
+            for (int j = from; j <= to; j++)
+            {
+                bool check = true;
+                for (int t = 0; t < s.size(); t++)
+                {
+                    if (s[t] != val[j + t])
+                    {
+                        check = false;
+                        break;
+                    }
+                }
+                if (check)
+                {
+                    count++;
+                }
+            }
+
+            cost[i] = count;
+        }
+    }
+
+    void handler(const std::string &s, int n)
+    {
+        std::vector<int> cost;
+        findCost(s, n, cost);
+
+        std::vector<int> results(n);
+        if (s == fn[0])
+        {
+            results[0] = 1;
+        }
+        if (s == fn[1])
+        {
+            results[1] = 1;
+        }
+        for (int i = 2; i < n; i++)
+        {
+            results[i] = results[i - 2] + results[i - 1] + cost[i];
+        }
+
+        std::cout << results[n] << std::endl;
+    }
+
+    void test(){
+        std::string s = "BABBAB";
+        handler(s, 8);
+    }
+}
