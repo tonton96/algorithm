@@ -1278,3 +1278,83 @@ namespace test5_150{
         handler(s, 8);
     }
 }
+
+
+namespace test6_150{
+    bool is_prime(int n)
+    {
+        if (n == 2)
+        {
+            return true;
+        }
+        else if (n < 2)
+        {
+            return false;
+        }
+        for (int i = 2; i < n; i++)
+        {
+            if (n % i == 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void find(const std::vector<bool> &primes, int id, int m, std::vector<int> &arr, std::vector<bool> &visited,
+              std::vector<std::vector<int>> &results)
+    {
+        if (id == arr.size())
+        {
+            if (primes[arr[id - 1] + arr[0]])
+            {
+                results.push_back(arr);
+            }
+            return;
+        }
+
+        for (int i = 2; i <= m; i++)
+        {
+            if (primes[i + arr[id - 1]] && !visited[i])
+            {
+                visited[i] = true;
+                arr[id] = i;
+                find(primes, id + 1, m, arr, visited, results);
+
+                visited[i] = false;
+            }
+        }
+    }
+
+    void handler(int n){
+        int m = n * 2;
+        std::vector<bool> primes(2 * m + 1);
+        for (int i = 2; i < primes.size(); i++)
+        {
+            primes[i] = is_prime(i);
+        }
+
+        std::vector<int> arr(m);
+        arr[0] = 1;
+
+        std::vector<bool> check(m + 1, false);
+        check[arr[0]] = true;
+
+        std::vector<std::vector<int>> results;
+        find(primes, 1, m, arr, check, results);
+
+        std::cout << results.size() << std::endl;
+        for (auto &result : results)
+        {
+            for (auto &val : result)
+            {
+                std::cout << val << ' ';
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void test(){
+        handler(4);
+    }
+}
