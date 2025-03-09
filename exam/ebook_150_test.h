@@ -1358,3 +1358,170 @@ namespace test6_150{
         handler(4);
     }
 }
+
+namespace test7_150
+{
+    const int UNASSIGN = -1, INF = 1e9;
+
+    void find_path(const std::vector<std::vector<int>> &traces, int point, std::vector<int> &path,
+                   std::vector<std::vector<int>> &paths)
+    {
+        if(traces[point].empty()){
+            paths.push_back(path);
+            return;
+        }
+
+        for(auto &p:traces[point]){
+            path.push_back(p);
+            find_path(traces, p, path, paths);
+            path.pop_back();
+        }
+    }
+
+    void find_path(const std::vector<std::vector<int>> &cost, int start, int stop,
+                   std::vector<std::vector<int>> &paths, int &len_path)
+    {
+        int num_points = cost.size();
+        std::vector<bool> free(num_points, true);
+        std::vector<int> dist(num_points, INF);
+        std::vector<std::vector<int>> trace(num_points);
+
+        dist[start] = 0;
+        while (true)
+        {
+            int min_point = UNASSIGN, min_dist = INF;
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point])
+                {
+                    if (dist[point] < min_dist)
+                    {
+                        min_dist = dist[point];
+                        min_point = point;
+                    }
+                }
+            }
+
+            if (min_point == UNASSIGN)
+            {
+                break;
+            }
+            free[min_point] = false;
+            if (min_point == stop)
+            {
+                break;
+            }
+
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point])
+                {
+                    int val = dist[min_point] + cost[min_point][point];
+                    if (val < dist[point])
+                    {
+                        dist[point] = val;
+                        trace[point] = {min_point};
+                    }
+                    else if(val == dist[point]){
+                        trace[point].push_back(min_point);
+                    }
+                }
+            }
+        }
+
+        if(!free[stop]){
+            len_path = dist[stop];
+            std::vector<int> path = {stop};
+            find_path(trace, stop, path, paths);
+        }
+        else{
+            len_path = INF;
+            paths.clear();
+        }
+    }
+
+    void handler(const std::vector<std::vector<int>> &cost, int ha, int sa, int hb, int sb)
+    {
+        std::vector<std::vector<int>> a_paths, b_paths;
+        int len_a, len_b;
+        find_path(cost, ha, sa, a_paths, len_a);
+        find_path(cost, hb, sb, b_paths, len_b);
+        
+        int num_points = cost.size();
+        std::vector<int> cost_a(num_points, INF);
+        std::vector<int> cost_b(num_points, INF);
+
+        for(auto &path: a_paths){
+            std::reverse(path.begin(), path.end());
+            int sum = 0;
+            for(int i = 1; i < path.size(); i++){
+                cost_a[path[i]] = sum + cost[path[i]][path[i - 1]];
+                sum +=  cost[path[i]][path[i - 1]];
+            }
+        }
+        
+        for(auto &path: b_paths){
+            std::reverse(path.begin(), path.end());
+            int sum = 0;
+            for(int i = 1; i < path.size(); i++){
+                cost_b[path[i]] = sum + cost[path[i]][path[i - 1]];
+                sum +=  cost[path[i]][path[i - 1]];
+            }
+        }
+
+        int min_time = INF, min_point = UNASSIGN;
+        for(int i = 0; i < num_points; i++){
+            auto val = std::max(cost_a[i], cost_b[i]);
+            if(min_time > val){
+                min_point = i;
+                min_time = val;
+            }
+        }
+
+        int id_a = UNASSIGN, id_b = UNASSIGN;
+        for(int i = 0; i < a_paths.size() && id_a == UNASSIGN; i++){
+            for(int j = 0; j < a_paths[i].size(); j++){
+                if(min_point == a_paths[i][j]){
+                    id_a = i;
+                    break;
+                }
+            }
+        }
+
+        for(int i = 0; i < b_paths.size() && id_b == UNASSIGN; i++){
+            for(int j = 0; j < b_paths[i].size(); j++){
+                if(min_point == b_paths[i][j]){
+                    id_b = i;
+                    break;
+                }
+            }
+        }
+
+        std::cout << len_a << std::endl;
+        for(auto point: a_paths[id_a]){
+            std::cout << (point + 1) <<  " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << len_b << std::endl;
+        for(auto point: b_paths[id_b]){
+            std::cout << (point + 1) <<  " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << (min_point + 1) << std::endl << min_time;
+    }
+
+    void test()
+    {
+        std::vector<std::vector<int>> cost = {
+            {INF, INF, 10 , 10 , INF, INF}, 
+            {INF, INF, 5  , INF, INF, INF},
+            {10 , 5  , INF, 5  , INF, 15 }, 
+            {10 , INF, 5  , INF, 20 , 15 }, 
+            {INF, INF, INF, 20 , INF, INF},
+            {INF, INF, 15 , 15 , INF, INF}};
+        int ha = 1, sa = 6, hb = 2, sb = 5;
+        handler(cost, ha - 1, sa - 1, hb - 1, sb - 1);
+    }
+}
