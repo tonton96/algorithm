@@ -1525,3 +1525,79 @@ namespace test7_150
         handler(cost, ha - 1, sa - 1, hb - 1, sb - 1);
     }
 }
+
+namespace test8_150
+{
+    const int W = 1000;
+
+    void compare(const std::string &content, const std::string &p, std::vector<int> &first, std::vector<int> &last){
+        first.resize(content.size());
+        last.resize(content.size());
+        for(int from = 0; from < content.size(); from++){
+            int count = 0;
+            for(int to = 0; to < p.size() && from + to < content.size(); to++){
+                if (content[from + to] == p[to])
+                {
+                    count++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            first[from] = count;
+        }
+
+        for (int from = 0; from < content.size(); from++)
+        {
+            int count = 0;
+            for (int to = p.size() - 1; to >= 0 && from - to >= 0; to--)
+            {
+                if (content[from - to] == p[to])
+                {
+                    count++;
+                }
+                {
+                    break;
+                }
+            }
+            last[from] = count;
+        }
+    }
+
+    void handler(const std::string &content, const std::string &p){
+        std::vector<int> first, last;
+        compare(content, p, first, last);
+
+        int id = 0, count = 0;
+        for(int i = 0; i < content.size(); i++){
+            for (int j = 0; j < content.size(); j++)
+            {
+                if (i <= j && first[i] + last[j] >= p.size())
+                {
+                    if ((j - i + 1) > p.size())
+                    {
+                        count++;
+                        id++;
+
+                        break;
+                    }
+                    else if ((j - i + 1) == p.size())
+                    {
+                        count += (i - id + 1);
+                        id = i + 1;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::cout << count << std::endl;
+    }
+
+    void test(){
+        const std::string content = "This is a sample text for the first task on the contest", p = "is";
+        handler(content, p);
+    }
+}
