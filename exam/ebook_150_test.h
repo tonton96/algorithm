@@ -1601,3 +1601,93 @@ namespace test8_150
         handler(content, p);
     }
 }
+
+namespace test9_150
+{
+    void find_max(const std::vector<int> &s1, const std::vector<int> &s2, std::vector<int> &s)
+    {
+        std::vector<std::vector<int>> cost(s1.size() + 1);
+        for (int i = 0; i <= s1.size(); i++)
+        {
+            cost[i].resize(s2.size() + 1);
+        }
+
+        for (int i = 0; i <= s1.size(); i++)
+        {
+            cost[i][0] = 0;
+        }
+
+        for (int i = 0; i <= s2.size(); i++)
+        {
+            cost[0][i] = 0;
+        }
+
+        for (int n1 = 1; n1 <= s1.size(); n1++)
+        {
+            for (int n2 = 1; n2 <= s2.size(); n2++)
+            {
+                if (s1[n1 - 1] == s2[n2 - 1])
+                {
+                    cost[n1][n2] = 1 + cost[n1 - 1][n2 - 1];
+                }
+                else
+                {
+                    cost[n1][n2] = std::max(cost[n1 - 1][n2], cost[n1][n2 - 1]);
+                }
+            }
+        }
+
+        int n1 = s1.size(), n2 = s2.size();
+        s.resize(cost[s1.size()][s2.size()]);
+
+        int count = s.size() - 1;
+        while (n1 != 0 && n2 != 0)
+        {
+            if (s1[n1 - 1] == s2[n2 - 1])
+            {
+                s[count--] = s1[n1 - 1];
+                n1--;
+                n2--;
+            }
+            else if (cost[n1][n2] == cost[n1][n2 - 1])
+            {
+                n2--;
+            }
+            else
+            {
+                n1--;
+            }
+        }
+        std::cout << "";
+    }
+
+    void handler(const std::vector<int> &s1, const std::vector<int> &s2)
+    {
+        std::vector<int> s, ss;
+        auto ss1 = s1, ss2 = s2;
+        for (int i = 0; i < s2.size() - 1; i++)
+        {
+            auto val = ss2[ss2.size() - 1];
+            for (int j = ss2.size() - 1; j > 0; j--)
+            {
+                ss2[j] = ss2[j - 1];
+            }
+            ss2[0] = val;
+            find_max(ss1, ss2, ss);
+            if(ss.size() > s.size()){
+                s = ss;
+            }
+        }
+        std::cout << s.size() << std::endl;
+        for (auto val : s)
+        {
+            std::cout << val << std::endl;
+        }
+    }
+
+    void test()
+    {
+        std::vector<int> s1 = {1, 2, 3, 4, 5, 6, 7, 8}, s2 = {2, 4, 6, 8, 1, 2, 3}, s;
+        handler(s1, s2);
+    }
+}

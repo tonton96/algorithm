@@ -13,6 +13,6 @@ using namespace alg;
 
 int main()
 {
-    test8_150::test();
+    test9_150::test();
     return 0;
 }
