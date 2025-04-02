@@ -1691,3 +1691,83 @@ namespace test9_150
         handler(s1, s2);
     }
 }
+
+namespace test10_150
+{
+    const int UNASSIGN = -1;
+    void find_max(const std::vector<int> &start, const std::vector<int> &stop, std::vector<int> &result)
+    {
+        std::vector<std::vector<bool>> parents(start.size());
+        for (int i = 0; i < start.size(); i++)
+        {
+            parents[i].resize(start.size());
+        }
+        for (int i = 0; i < start.size(); i++)
+        {
+            int si = start[i], fi = stop[i];
+            for (int j = 0; j < start.size(); j++)
+            {
+                int sj = start[j], fj = stop[j];
+                parents[i][j] = fj <= si;
+            }
+        }
+
+        std::vector<int> cost(start.size(), 1), trace(start.size(), UNASSIGN);
+        while (true)
+        {
+            int count = 0;
+            for (int i = 0; i < start.size(); i++)
+            {
+                for (int j = 0; j < start.size(); j++)
+                {
+                    if (parents[i][j])
+                    {
+                        if (cost[i] < cost[j] + 1)
+                        {
+                            cost[i] = cost[j] + 1;
+                            trace[i] = j;
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            if (count == 0)
+            {
+                break;
+            }
+        }
+
+        int id_max = 0;
+        for(int i = 0 ; i < start.size(); i++){
+            if(cost[i] > cost[id_max]){
+                id_max = i;
+            }
+        }
+
+        int id = id_max;
+        while(id != UNASSIGN){
+            result.push_back(id);
+            id = trace[id];
+        }
+        std::reverse(result.begin(), result.end());
+    }
+
+    void handler(const std::vector<int> &start, const std::vector<int> &stop)
+    {
+        std::vector<int> result;
+        find_max(start, stop, result);
+        std::cout << result.size() << std::endl;
+        for (auto &val : result)
+        {
+            std::cout << val + 1 << std::endl;
+        }
+    }
+
+    void test()
+    {
+        std::vector<int> start = {7, 2, 1, 1, 3};
+        std::vector<int> stop = {9, 4, 3, 6, 7};
+        handler(start, stop);
+    }
+}
