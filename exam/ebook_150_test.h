@@ -1771,3 +1771,115 @@ namespace test10_150
         handler(start, stop);
     }
 }
+
+namespace test11_150 {
+    const int INF = 1e9, UNASSIGN = -1;
+
+    void find_min(const std::vector<std::vector<int>> &cost, int s, int f, int &min_path, std::vector<int> &path)
+    {
+        int num_points = cost.size();
+        std::vector<int> dist(num_points, INF);
+        std::vector<int> trace(num_points, UNASSIGN);
+        std::vector<bool> free(num_points, true);
+
+        dist[s] = 0;
+        while (true)
+        {
+            int min_point = UNASSIGN, min_dist = INF;
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point])
+                {
+                    if (dist[point] < min_dist)
+                    {
+                        min_point = point;
+                        min_dist = dist[point];
+                    }
+                }
+            }
+
+            if (min_point == UNASSIGN)
+            {
+                break;
+            }
+
+            free[min_point] = false;
+            if (min_point == f)
+            {
+                break;
+            }
+
+            for (int point = 0; point < num_points; point++)
+            {
+                if (free[point] && cost[min_point][point] != INF)
+                {
+                    if (dist[min_point] + cost[min_point][point] < dist[point])
+                    {
+                        dist[point] = dist[min_point] + cost[min_point][point];
+                        trace[point] = min_point;
+                    }
+                }
+            }
+        }
+
+        min_path = dist[f];
+        int id = f;
+        while (id != UNASSIGN)
+        {
+            path.push_back(id);
+            id = trace[id];
+        }
+        std::reverse(path.begin(), path.end());
+    }
+
+    void handler(int l1, int l2, int l3, int c1, int c2, int c3, int s, int f, const std::vector<int> &dist)
+    {
+        std::vector<int> pos = {0};
+        pos.insert(pos.end(), dist.begin(), dist.end());
+
+        int num_points = pos.size();
+        std::vector<std::vector<int>> cost(num_points);
+        for (auto &val : cost)
+        {
+            val.resize(num_points);
+        }
+
+        for (int i = 0; i < num_points; i++)
+        {
+            for (int j = i + 1; j < num_points; j++)
+            {
+                int d = pos[j] - pos[i];
+                if (d <= l1)
+                {
+                    cost[i][j] = cost[j][i] = c1;
+                }
+                else if (d <= l2)
+                {
+                    cost[i][j] = cost[j][i] = c2;
+                }
+                else if (d <= l3)
+                {
+                    cost[i][j] = cost[j][i] = c3;
+                }
+                else
+                {
+                    cost[i][j] = cost[j][i] = INF;
+                }
+            }
+        }
+
+        int min_path;
+        std::vector<int> path;
+        find_min(cost, s - 1, f -1, min_path, path);
+
+        std::cout << min_path << std::endl;
+    }
+
+    void test()
+    {
+        int l1 = 3, l2 = 6, l3 = 8, c1 = 20, c2 = 30, c3 = 40;
+        int s = 2, f = 6;
+        std::vector<int> dist = {3, 7, 8, 13, 15, 23};
+        handler(l1, l2, l3, c1, c2, c3, s, f, dist);
+    }
+}
